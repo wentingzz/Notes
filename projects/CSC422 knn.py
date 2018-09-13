@@ -87,3 +87,23 @@ normtest_all = (x_test - x_train.min(axis=0)) / (x_train.max(axis=0) - x_train.m
 # print(norm_all)
 
 # print(y_train)
+
+#####################################################
+#       This part is to fit the testing into        #
+#       KNN model and calculate the error rate      #
+#####################################################
+def calerror(x_training, y_training, x_testing, y_testing):
+    k_list = np.arange(1,101, 1)
+    error = []
+    for k in k_list:
+        classifier = KNeighborsClassifier(n_neighbors=k)
+        classifier.fit(x_training, y_training)
+        y_predicts = classifier.predict(x_testing)
+        for y_pre in y_predicts:
+            y_pre = 0 if y_pre < 0.5 else 1
+        error.append(float(sum(y_predicts != y_testing) / len(y_testing)))
+    return error
+err14 = calerror(norm14, y_train14, normtest14, y_test)
+err15 = calerror(norm15, y_train15, normtest15, y_test)
+err16 = calerror(norm16, y_train16, normtest16, y_test)
+err_all = calerror(norm_all, y_train, normtest_all, y_test)
