@@ -38,3 +38,12 @@ covtrain = np.cov(ntrain)
 covtest = np.cov(ntest)
 # print('b)i. covariance of training')
 # print(covtrain)
+
+### (b) ii
+eig_train = np.linalg.eig(covtrain)     #[0] is eigenvalues, [1] is eigenvectors
+eigenvalues = eig_train[0][:]
+eigenvalues.sort()
+# eig_test = np.linalg.eig(covtest)
+print('b) ii. size of covariance matrix = ', covtrain.shape)
+print('       5 largest eigenvalues are: ', eigenvalues[-1], ', ', eigenvalues[-2], ', ', eigenvalues[-3], ', ', eigenvalues[-4], ', ', eigenvalues[-5], '.')
+
