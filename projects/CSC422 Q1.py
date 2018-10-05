@@ -20,3 +20,21 @@ for i in range(len(train[0]) - 1):
             max[i] = train[j][i]
         if min[i] > train[j][i]:
             min[i] = train[j][i]
+
+### (b)
+ntrain = []
+ntest = []
+for j in range(len(train)):
+    for i in range(len(train[0]) - 1):
+        ntrain.append((train[j][i] - min[i])/(max[i] - min[i]))
+for k in range(len(test)):
+    for i in range(len(train[0]) - 1):
+        ntest.append((test[k][i] - min[i]) / (max[i] - min[i]))
+ntrain = np.reshape(ntrain, (len(train),len(train[0]) - 1))
+ntest = np.reshape(ntest, (len(test), len(test[0]) - 1))
+
+### (b) i
+covtrain = np.cov(ntrain)
+covtest = np.cov(ntest)
+# print('b)i. covariance of training')
+# print(covtrain)
