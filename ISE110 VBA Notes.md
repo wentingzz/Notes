@@ -191,7 +191,7 @@ in initialize() sub:
         .AddItem "Richmond"
     End With
 
-Me.CityListBox.RowSource = “customers” // customers is the range name
+Me.CityListBox.RowSource = “customers” ' customers is the range name
 answer = MsgBox("Do you really want to quit?" vbYesNo, “Terminate form”)
 if answer = vbYes then Unload Me
 
@@ -211,7 +211,7 @@ loop
 end with
 Close #1
 
-n = len(myString) - len(Replace(myString, “$”, “”))  // n is the number of the dollar signs
+n = len(myString) - len(Replace(myString, “$”, “”))  ' n is the number of the dollar signs
 ```
 solver:
 - use the function(absolute reference) to calculate the goal value (to maximize)
