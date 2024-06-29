@@ -1,6 +1,6 @@
 # Generative AI
 This document explores various phrases of utilizing generative AI models, focusing on selecting appropriate models, optimizing through adaptation and alignment strategies, and integrating them into real-world applications.
-![img.png](images/ai1.png)
+![img.png](images/ai/ai1.png)
 ## Table of Contents
 1. [Select a Model](#Select-Model)
 2. Adapt and Algin Model
@@ -63,7 +63,7 @@ This document explores various phrases of utilizing generative AI models, focusi
    - Fine-tuning for specialized applications.
 
 **Fine-Tuning Process**
-![img.png](images/ai2.png)
+![img.png](images/ai/ai2.png)
 1. Preparing Training Data**
    - Convert existing datasets into instruction prompt datasets using prompt template libraries.
    - eg. Amazon reviews dataset
@@ -148,7 +148,7 @@ Evaluate the response based on Helpfulness + Honesty + Harmlessness
 - <details>
   <summary>Reinforcement Learning (RL)</summary>
 
-  ![img.png](images/ai9.png)
+  ![img.png](images/ai/ai9.png)
   - Actions lead to new states, and effective actions are rewarded.
   - LLM generates text (actions) based on a prompt (state).
   - Rewarded for outputs that align with human preferences (e.g., helpful, non-toxic).
@@ -158,14 +158,14 @@ Evaluate the response based on Helpfulness + Honesty + Harmlessness
 - <details>
   <summary>Human Feedback</summary>
 
-  ![img_1.png](images/ai10.png)
+  ![img_1.png](images/ai/ai10.png)
   - Convert ranking data into pairwise comparisons of completions (N choose 2).
   - Make sure to reorder the pair so the preferred choice always comes first.
   </details>
 - <details>
   <summary>Reward Model</summary>
 
-  ![img_2.png](images/ai11.png)
+  ![img_2.png](images/ai/ai11.png)
   - The reward model acts as a binary classifier.
   </details>
 
@@ -180,13 +180,13 @@ Metrics include:
   - For summarization tasks.
   - Compares generated summaries and human references.
   - ROUGE-1 considers single words (no order of words)
-    ![img.png](images/ai3.png)
+    ![img.png](images/ai/ai3.png)
   - ROUGE-2 considers pairs of words
-    ![img.png](images/ai4.png)
+    ![img.png](images/ai/ai4.png)
   - ROUGE-L focuses on the longest common subsequence
-    ![img.png](images/ai5.png)
+    ![img.png](images/ai/ai5.png)
   - ROUGE clipping (bad completion but good score)
-    ![img_1.png](images/ai6.png)
+    ![img_1.png](images/ai/ai6.png)
   </details>
 
 - <details>
@@ -196,7 +196,7 @@ Metrics include:
     - BLEU score indicates how closely the translation matches the reference.
     - Evaluates precision of generated text compared to the human translation.
     - Metrics = avg(precision across range of n-gram size)
-      - Ex. ![img.png](images/ai7.png)
+      - Ex. ![img.png](images/ai/ai7.png)
   </details>
 - <details>
     <summary>For overall model evaluation, comprehensive benchmarks are preferred.</summary>
@@ -217,17 +217,17 @@ Metrics include:
 
 ### Reinforcement Learning from Human Feedback (RLHF)
 - Aligns model outputs with human preferences.
-![img.png](images/ai13.png)
+![img.png](images/ai/ai13.png)
 - Improves the usefulness, relevance, and safety of generated text.
 - Helps models acknowledge limitations and avoid harmful content.
-![img_1.png](images/ai12.png)
+![img_1.png](images/ai/ai12.png)
 - RL-updated LLM before 1st iteration =  Instruct fine-tuned LLM.
 - RL-updated LLM after n iterations = Human-aligned LLM.
 
 **RL algorithm**
 - To update the weights of the LLM and move it towards generating more aligned, higher reward responses.
 - Ex. PPO (proximal policy optimization) is commonly used.
-![img_2.png](images/ai14.png)
+![img_2.png](images/ai/ai14.png)
   - higher entropy ⇒ higher creativity in completion
 
 <details>
@@ -235,11 +235,11 @@ Metrics include:
 
 - Distort completion for higher reward
 - Avoid by keeping original/reference model fixed.
-  - ![img_3.png](images/ai15.png)
+  - ![img_3.png](images/ai/ai15.png)
 - Replace RL-updated LLM by adding PEFT to save half of the memory
-  - ![img_4.png](images/ai16.png)
+  - ![img_4.png](images/ai/ai16.png)
 - Scaling Human Feedback with Constitutional AI
-  - ![img_5.png](images/ai17.png)
+  - ![img_5.png](images/ai/ai17.png)
   - Supervised Learning Phase
     - Red Teaming (Generate harmful responses) → Self-Critique → Revision → Training Data (use pairs of red-team prompts and revised responses for fine-tuning).
 
@@ -262,7 +262,7 @@ Metrics include:
    - Minimize the distillation loss with teacher’s probability distribution.
    - Apply a temperature parameter to the softmax function to soften the teacher model's output distribution.
    - Train the student model with standard softmax for hard predictions.
-   ![img.png](images/ai23.png)
+   ![img.png](images/ai/ai23.png)
 2. **Quantization:**
    - Post-training quantization (PTQ) transforms model weights and/or activation layers to a lower precision representation.
    - Possible small percentage reduction in model evaluation metrics, balanced by cost savings and performance gains.
@@ -271,14 +271,14 @@ Metrics include:
    - Limitation: may have minimal impact due to fewer redundant weights.
 
 **Time/effort of lifecycle**
-![img_1.png](images/ai18.png)
+![img_1.png](images/ai/ai18.png)
 
 **Issues after training:**
 - Orchestration libraries like Langchain manage user input and model completions.
 - <details>
     <summary>Issue #1: knowledge cutoffs ⇐ RAG</summary>
     
-    ![img_2.png](images/ai19.png)
+    ![img_2.png](images/ai/ai19.png)
     - Solved with Retrieval Augmented Generation (RAG) by integrating external data.
     - Increases relevance and accuracy without frequent retraining.
     - **Advantages of RAG**
@@ -294,7 +294,7 @@ Metrics include:
          - Embedding Vectors: Facilitate fast and relevant searches.
            - Vector databases = vector store where each vector is also identified by a key.
          
-         ![img_3.png](images/ai20.png)
+         ![img_3.png](images/ai/ai20.png)
   </details> 
 
 - <details>
@@ -316,10 +316,10 @@ Metrics include:
       - Instructions: Define task and allowable actions.
       - Example Prompt: Includes multiple thought-action-observation sequences.
       - Inference: Combine instructions, examples, and the new question for the LLM to process.
-        ![img_4.png](images/ai21.png)
+        ![img_4.png](images/ai/ai21.png)
     - Langchain (support for PAL and ReAct agents)
-      ![img_5.png](images/ai22.png)
+      ![img_5.png](images/ai/ai22.png)
       </details> 
 
 ## Overall Architecture
-![img.png](images/ai24.png)
+![img.png](images/ai/ai24.png)
