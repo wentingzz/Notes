@@ -53,7 +53,7 @@
     Output the MST using parent[] which stores the MST edges.
     ```
 - **Kruskal's**: 
-    - union-find `O(E logV)`
+    - Find-Union `O(E logV)`
     - Pseudocode
       ```
       KruskalMST(graph):
@@ -68,4 +68,47 @@
         
           return MST
       ```
-- 
+      
+**Find Union**
+- Kruskal's algorithm union until we have 1 clustering
+- Max-Spacing k-clusterings
+  - Separated pairs are those who are assigned to different clusterings
+  - Goal: minimize the spacing between nearest separated paris
+  - Solution: apply union-find until we have k clusterings
+- Different implementations
+  - Lazy union: directly update parent
+  - Union by rank to avoid deep tree
+    - rank = height of the tree
+      - rank(node) = max(rank(children of node)) + 1
+    - higher rank will be parent (no need to update rank)
+    - increment parent's rank if two tree has the same height
+    ```python
+    def union(self, p, q):
+        rootP = self.find(p)
+        rootQ = self.find(q)
+
+        if rootP != rootQ:
+            if self.rank[rootP] > self.rank[rootQ]:
+                self.parent[rootQ] = rootP
+            elif self.rank[rootP] < self.rank[rootQ]:
+                self.parent[rootP] = rootQ
+            else:
+                self.parent[rootQ] = rootP
+                self.rank[rootP] += 1
+    ```
+  - Path compression
+    - update parent to root parent after calling `find(node)`
+    ```python
+    def find(self, p):
+        if self.parent[p] != p:
+            self.parent[p] = self.find(self.parent[p])  # Path compression
+        return self.parent[p]
+    ```
+    - rank of parent will change after many path compressions but we don't update it
+- Time complexity
+  - Find = O(n) for lazy union | O(log n) for rank union
+  - Union = O(Find + 1) for both
+  - Total = O(n log n)
+- More advanced topics: Hopcroft-Ullman analysis, Ackermann function, Tarjan's analysis, 
+
+## Huffman Codes
