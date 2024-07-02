@@ -1,17 +1,292 @@
 # Algorithms
 
 ## Table of Contents
-1. [Divide and Conquer, Sorting and Searching, and Randomized Algorithms](#)
-2. [Graph Search, Shortest Paths, and Data Structures](#)
-3. [Greedy & DP](#Greedy-Algorithms-&-Dynamic-Programming): Scheduling, MST, Huffman; WIS, Knapsack, Sequence Alignment, Optimal BST
-4. [Shortest Paths Revisited, NP-Complete Problems and What To Do About Them](#)
+1. [Divide and Conquer, Sorting](#divide-and-conquer-sorting)
+2. [Graph Search, Shortest Paths, and Data Structures](#graph-search-shortest-paths-and-data-structures)
+3. [Greedy & DP](#greedy-algorithms--dynamic-programming): Scheduling, MST, Huffman; WIS, Knapsack, Sequence Alignment, Optimal BST
+4. [Shortest Paths Revisited, NP-Complete Problems and What To Do About Them](#shortest-paths-revisited-np-complete-problems-and-what-to-do-about-them)
 
-
-## Divide and Conquer, Sorting and Searching, and Randomized Algorithms
+## Divide and Conquer, Sorting
 <details>
-  <summary></summary>
+  <summary>Divide & Conquer: Counting Inversions, Integer/Matrix Multiplication, Closest Pair, Master Method</summary>
 
+  \
+  **Counting Inversions**
+  - Split into LHS and RHS, count inversion of each respectively, and count inversions between them
+    ```
+    def count_inversions(arr):
+        if len(arr) < 2:
+            return arr, 0
+        mid = len(arr) // 2
+        left, left_inv = count_inversions(arr[:mid])
+        right, right_inv = count_inversions(arr[mid:])
+        merged, split_inv = merge_and_count_split_inv(left, right)
+        total_inv = left_inv + right_inv + split_inv
+        return merged, total_inv
+    
+    def merge_and_count_split_inv(left, right):
+        i = j = inv_count = 0
+        merged = []
+        while i < len(left) and j < len(right):
+            if left[i] <= right[j]:
+                merged.append(left[i])
+                i += 1
+            else:
+                merged.append(right[j])
+                inv_count += len(left) - i
+                j += 1
+        merged.extend(left[i:])
+        merged.extend(right[j:])
+        return merged, inv_count
+    ```
   
+  **Integer Multiplication - Karatsuba**
+  - Running time = $O(n^{log_2 3})$
+  - Given two integers $x$ and $y$ to multiply, split each integer into two halves:
+  $$x = x_1 \cdot 10^{\frac{n}{2}} + x_0$$
+  $$y = y_1 \cdot 10^{\frac{n}{2}} + y_0$$
+  - Recursively compute the following intermediate products:
+       $$z_0 = x_0 y_0$$
+       $$z_1 = (x_1 + x_0)(y_1 + y_0)$$
+       $$z_2 = x_1 y_1 $$
+  - The final product $z$ of $x$ and $y$ is given by:
+       $$z = z_2 \cdot 10^n + (z_1 - z_2 - z_0) \cdot 10^{\frac{n}{2}} + z_0$$
+    
+    ```python
+    def karatsuba(x, y):
+        # Base case: if either x or y is a single-digit number, use simple multiplication
+        if x < 10 or y < 10:
+            return x * y
+        
+        # Calculate the number of digits in both x and y
+        n = max(len(str(x)), len(str(y)))
+        n2 = n // 2  # floor(n/2)
+    
+        # Split x and y into halves
+        high1, low1 = x // 10**n2, x % 10**n2
+        high2, low2 = y // 10**n2, y % 10**n2
+    
+        # Recursively calculate three products
+        z0 = karatsuba(low1, low2)  # z0 = low1 * low2
+        z1 = karatsuba((low1 + high1), (low2 + high2))  # z1 = (low1 + high1) * (low2 + high2)
+        z2 = karatsuba(high1, high2)  # z2 = high1 * high2
+    
+        # Apply the Karatsuba formula to get the final result
+        return z2 * 10**(2 * n2) + (z1 - z2 - z0) * 10**n2 + z0
+    ```
+  
+  **Matrix Multiplication - Strassen's 7 Products**
+  - Split each matrix $A$ and $B$ into four smaller matrices. If $A$ and $B$ are $n \times n$ matrices, split them into $\frac{n}{2} \times \frac{n}{2}$ submatrices.
+  - Recursively compute the products of these smaller submatrices until the base case is reached (usually $1 \times 1$ matrices).
+    ```math
+    X = [[A B]    Y = [[E F]        X*Y = [[P5+P4-P2+P6  P1+P2]
+        [C D]]        [G H]]              [P3+P4  P1+P5-P3-P7]]
+    
+    P1 = A(F-H)
+    P2 = (A+B)H
+    P3 = (C+D)E
+    P4 = D(G-E)
+    P5 = (A+D)(E+H)
+    P6 = (B-D)(G+H)
+    P7 = (A-C)(E+F)
+    ```
+  - Combine the results of smaller subproblems to obtain the final product matrix.
+    ```
+    def matrix_multiply_recursive(X, Y):
+        n = len(X)
+        if n == 1:
+            return [[X[0][0] * Y[0][0]]]
+    
+        # Divide X and Y into quarters
+        mid = n // 2
+        A = [row[:mid] for row in X[:mid]]
+        B = [row[mid:] for row in X[:mid]]
+        C = [row[:mid] for row in X[mid:]]
+        D = [row[mid:] for row in X[mid:]]
+        E = [row[:mid] for row in Y[:mid]]
+        F = [row[mid:] for row in Y[:mid]]
+        G = [row[:mid] for row in Y[mid:]]
+        H = [row[mid:] for row in Y[mid:]]
+    
+        # Recursive calls to compute the sub-products
+        P1 = matrix_multiply_recursive(A, matrix_subtract(F, H))
+        P2 = matrix_multiply_recursive(matrix_add(A, B), H)
+        P3 = matrix_multiply_recursive(matrix_add(C, D), E)
+        P4 = matrix_multiply_recursive(D, matrix_subtract(G, E))
+        P5 = matrix_multiply_recursive(matrix_add(A, D), matrix_add(E, H))
+        P6 = matrix_multiply_recursive(matrix_subtract(B, D), matrix_add(G, H))
+        P7 = matrix_multiply_recursive(matrix_subtract(A, C), matrix_add(E, F))
+    
+        # Compute the sub-matrices of the result
+        return C = [[P5+P4-P2+P6, P1+P2], [P3+P4, P1+P5-P3-P7]]
+    ```
+  
+  **Closest Pair**
+  - Sort points by x and y respectively,
+  - Divide sorted points into half, and recursively find the closest pair in each half
+  - Combine left_pair, right_pair, pair_in_between to find the best one. 
+    ```
+    # Recursive function to find closest pair
+    def closest_pair_rec(P_x, P_y, n):
+        # Base case: small n => directly compute
+        if n <= 3:
+            return brute_force_closest_pair(P_x)
+        
+        mid = n // 2
+        Q_x = P_x[:mid]
+        R_x = P_x[mid:]
+        Q_y = [p for p in P_y if p in Q_x]
+        R_y = [p for p in P_y if p in R_x]
+        (p1, q1) = closest_pair_rec(Q_x, Q_y, mid)
+        (p2, q2) = closest_pair_rec(R_x, R_y, n - mid)
+        delta = min(dist(p1, q1), dist(p2, q2))
+        (p3, q3) = closest_pair_split(P_x, P_y, delta, P_x[mid])
+  
+        return best((p1, q1), (p2, q2), (p3, q33))
+    
+    def closest_pair_split(P_x, P_y, delta, midpoint):
+        best_strip_pair = None
+        min_strip_distance = delta
+        strip = [point for point in P_y if abs(point[0] - mid_point[0]) < delta]  # Scan the points near the midpoint to see if there is a better pair
+        
+        for i in range(len(strip)):
+            for j in range(i + 1, len(strip)):
+                if (strip[j][1] - strip[i][1]) >= min_strip_distance:
+                    break
+                elif dist(strip[i], strip[j]) < min_strip_distance:
+                    min_strip_distance = dist(strip[i], strip[j])
+                    best_strip_pair = (strip[i], strip[j])
+        
+        return best_strip_pair
+        
+    ```
+  
+  **Master Method**
+  - The master theorem typically applies to recurrences of the form:
+  
+  $$T(n) = a T({\frac{n}{b}}) + O(n^d)$$
+  
+  - If $a = b^d$, time = $O(n^d log n)$
+  - If $a < b^d$, time = $O(n^d)$
+  - If $a > b^d$, time = $O(n^{log_b a})$
+
+</details>
+
+<details>
+  <summary>Sort: Merge Sort, Quick Sort, Selection</summary>
+
+  \
+  **Merge Sort**
+  - Split into LHS and RHS, sort them respectively, and merge them
+  - Running time = $O(n \cdot log n)$
+    ```python
+    def merge_sort(arr):
+        if len(arr) <= 1:
+            return arr
+        
+        # Divide the array into two halves and recursively sort each half
+        left_half = merge_sort(arr[:mid])
+        right_half = merge_sort(arr[mid:])
+        return merge(left_half, right_half)
+    
+    def merge(left, right):
+        merged = []
+        left_idx, right_idx = 0, 0
+        
+        # Merge elements from left and right into sorted order
+        while left_idx < len(left) and right_idx < len(right):
+            if left[left_idx] <= right[right_idx]:
+                merged.append(left[left_idx])
+                left_idx += 1
+            else:
+                merged.append(right[right_idx])
+                right_idx += 1
+        
+        # Append remaining elements
+        while left_idx < len(left):
+            merged.append(left[left_idx])
+            left_idx += 1
+        while right_idx < len(right):
+            merged.append(right[right_idx])
+            right_idx += 1
+        return merged
+    ```
+  
+  **Quick Sort**
+  - choose a pivot. Put all smaller elements on its left and all larger elements on its right
+  - average running time = $O(n \cdot log n)$ and worst runninng time = $O(n^2)$
+    ```python
+    def partition(arr, low, high):
+        pivot = arr[high]  # Choose the pivot element (last element in this case)
+        i = low - 1  # Index of smaller element
+        
+        for j in range(low, high):
+            if arr[j] <= pivot:
+                i += 1
+                arr[i], arr[j] = arr[j], arr[i]  # Swap elements at i and j
+        
+        arr[i + 1], arr[high] = arr[high], arr[i + 1]  # Swap pivot with element at i + 1
+        return i + 1  # Return the partition index
+    
+    def quick_sort_inplace(arr, low, high):
+        if low < high:
+            pi = partition(arr, low, high)  # Partition index
+            quick_sort_inplace(arr, low, pi - 1)  # Sort left subarray
+            quick_sort_inplace(arr, pi + 1, high)  # Sort right subarray
+    ```
+</details>
+
+<details>
+  <summary>Randomized Algorithms: Selection, Minimal Cut</summary>
+
+  \
+  **Selection**
+  - Selecting the k-th smallest element
+  - Average running time = $O(n)$, worst running time = $O(n^2)$
+    ```python
+    def quickselect(arr, low, high, k):
+        if low < high:
+            pi = partition(arr, low, high)
+            if pi == k:
+                return arr[pi]
+            elif pi < k:
+                return quickselect(arr, pi + 1, high, k)
+            else:
+                return quickselect(arr, low, pi - 1, k)
+        return arr[low]
+    ```
+  
+  **Minimal Cut using Random Contraction Algorithm**
+  - cut-set = the bridging edges of divided sets A and B
+  - $n = |V|$ and $m = |E|$
+  - While there are more than 2 vertices in the graph:
+    - Randomly select an edge $u, v ∈ E$
+    - Merge (or contract) vertices $u$ and $v$ into a single vertex.
+    - Update the edge set $E$ to remove self-loops but keep the multi-edges.
+  
+    ```python
+    def random_contraction_algorithm(graph):
+        while len(graph.vertices) > 2:
+            # Randomly select an edge (u, v)
+            u, v = random.choice(graph.edges)
+            
+            # Merge vertices u and v
+            graph.contract(u, v)
+        
+        # The remaining edges form the cut
+        min_cut = len(graph.edges)
+        return min_cut
+    
+    def karger_min_cut(graph, num_iterations):
+        min_cut = float('inf')
+        for i in range(num_iterations):
+            # Make a copy of the graph to avoid modifying the original
+            temp_graph = copy.deepcopy(graph)
+            cut = random_contraction_algorithm(temp_graph)
+            if cut < min_cut:
+                min_cut = cut
+        return min_cut
+    ```
 </details>
 
 ## Graph Search, Shortest Paths, and Data Structures
