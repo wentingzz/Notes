@@ -1,10 +1,27 @@
 # Algorithms
 
 ## Table of Contents
-1. [Greedy Algorithms & Dynamic Programming](#Greedy-MST-and-DP): Scheduling, MST, Huffman; WIS, Knapsack, Sequence Alignment, Optimal BST
+1. [Divide and Conquer, Sorting and Searching, and Randomized Algorithms](#)
+2. [Graph Search, Shortest Paths, and Data Structures](#)
+3. [Greedy & DP](#Greedy-Algorithms-&-Dynamic-Programming): Scheduling, MST, Huffman; WIS, Knapsack, Sequence Alignment, Optimal BST
+4. [Shortest Paths Revisited, NP-Complete Problems and What To Do About Them](#)
 
 
-## Greedy & DP
+## Divide and Conquer, Sorting and Searching, and Randomized Algorithms
+<details>
+  <summary></summary>
+
+  
+</details>
+
+## Graph Search, Shortest Paths, and Data Structures
+<details>
+  <summary></summary>
+
+  
+</details>
+
+## Greedy Algorithms & Dynamic Programming
 <details>
   
   <summary>Greedy: Scheduling, Minimum Spanning Tree(Prim's, Kruskal's), Huffman Codes</summary>
@@ -269,4 +286,11 @@
       # Return minimum value
       return cost[i][j] = fsum + Min
   ```
+</details>
+
+## Shortest Paths Revisited, NP-Complete Problems and What To Do About Them
+<details>
+  <summary></summary>
+
+  
 </details>
