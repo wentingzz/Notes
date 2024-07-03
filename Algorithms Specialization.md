@@ -291,9 +291,149 @@
 
 ## Graph Search, Shortest Paths, and Data Structures
 <details>
-  <summary></summary>
+  <summary>Graph Seach: BFS, DFS, Topological Sort</summary>
 
+  \
+  **BFS (queue)**
+  - explore in layers
+  - application:
+    - shortest path between two points while all edges have the same weight
+    - connectivity of undirected graph (if two vertices are connected) $O(|E|+|V|)$. To find all connected pieces, run BFS on all nodes if not visited.
+    ```python
+    def bfs(graph, start):
+        visited = set()
+        queue = Queue()
+        queue.put(start)
+        visited.add(start)
+        
+        while not queue.empty():
+            vertex = queue.get()
+            print(vertex, end=" ")
+            
+            for neighbor in graph[vertex]:
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.put(neighbor)
+    ```
   
+  **DFS**
+  - $O(|E|+|V|)$
+    ```python
+    def dfs_recursive(graph, start, visited=None):
+        if visited is None:
+            visited = set()
+        visited.add(start)
+        
+        print(start, end=' ')
+        
+        for neighbor in graph[start]:
+            if neighbor not in visited:
+                dfs_recursive(graph, neighbor, visited)
+        return visited
+    ```
+  
+  **Topological Sort**
+  - directed graph
+  - application
+    - order to take course (prerequisite first)
+    - compute strongly connected componenet (SCC) where there is a path from any vertex to every other vertex in the graph.
+  - DFS implementation
+    ```python
+    def topological_sort_dfs(graph):
+        visited = set()
+        stack = []
+    
+        def dfs(node):
+            visited.add(node)
+            for neighbor in graph[node]:
+                if neighbor not in visited:
+                    dfs(neighbor)
+            stack.append(node)
+    
+        for node in graph:
+            if node not in visited:
+                dfs(node)
+    
+        stack.reverse()
+        return stack
+    ```
+  - BFS with Kahn's algorithm (keep track of in_degree)
+    ```python
+    def topological_sort_kahns(graph):
+        # Calculate in-degree of each node
+        in_degree = {node: 0 for node in graph}
+        for nodes in graph.values():
+            for node in nodes:
+                in_degree[node] += 1
+    
+        # Collect nodes with no incoming edges
+        queue = deque([node for node in graph if in_degree[node] == 0])
+        top_order = []
+    
+        while queue:
+            node = queue.popleft()
+            top_order.append(node)
+    
+            # Decrease the in-degree of neighboring nodes
+            for neighbor in graph[node]:
+                in_degree[neighbor] -= 1
+                if in_degree[neighbor] == 0:
+                    queue.append(neighbor)
+    
+        if len(top_order) == len(graph):
+            return top_order
+        else:
+            raise ValueError("Graph has a cycle and cannot be topologically sorted")
+    ```
+  
+  **Strongly Connected Components - Kosaraju's**
+  - Perform a DFS on the transposed graph and keep track of the finish time of each vertex (push onto a stack when finished).
+  - Perform a DFS on the original graph, in the order defined by the stack (highest finish time first). Each tree in this DFS is an SCC.
+    ```python
+    def kosaraju_scc(graph):
+        def transpose(graph):
+            transposed = {v: [] for v in graph}
+            for v in graph:
+                for neighbor in graph[v]:
+                    transposed[neighbor].append(v)
+            return transposed
+        
+        def dfs_first_pass(graph, v, visited, stack):
+            visited[v] = True
+            for neighbor in graph[v]:
+                if not visited[neighbor]:
+                    dfs_first_pass(graph, neighbor, visited, stack)
+            stack.append(v)
+        
+        def dfs_second_pass(graph, v, visited, component):
+            visited[v] = True
+            component.append(v)
+            for neighbor in graph[v]:
+                if not visited[neighbor]:
+                    dfs_second_pass(graph, neighbor, visited, component)
+        
+        # Step 1: Transpose the graph and DFS
+        transposed_graph = transpose(graph)
+        stack = []
+        visited = {v: False for v in graph}
+        for v in graph:
+            if not visited[v]:
+                dfs_first_pass(transposed_graph, v, visited, stack)
+        
+        # Step 2: Second DFS on the original graph
+        visited = {v: False for v in graph}
+        sccs = []
+        while stack:
+            v = stack.pop()
+            if not visited[v]:
+                component = []
+                dfs_second_pass(graph, v, visited, component)
+                sccs.append(component)
+        
+        return sccs
+    ```
+
+
 </details>
 
 ## Greedy Algorithms & Dynamic Programming
