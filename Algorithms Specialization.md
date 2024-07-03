@@ -291,7 +291,7 @@
 
 ## Graph Search, Shortest Paths, and Data Structures
 <details>
-  <summary>Graph Seach: BFS, DFS, Topological Sort</summary>
+  <summary>Graph Seach: BFS, DFS, Topological Sort, Strongly Connected Components (Kosaraju)</summary>
 
   \
   **BFS (queue)**
@@ -435,6 +435,387 @@
 
 
 </details>
+
+<details>
+  <summary>Shortest Path: Dijkstra, Bellman-Ford, Floyd-Warshall</summary>
+
+  \
+  **Dijkstra**
+  - we use bfs to compute shortest path on unweighted graph
+  - Dijkstra can get shortest path on non-negative graph with time = $O((|V| + |E|) log |V|$ & space = $O(|V| + |E|)$
+  - If graph has negative edges, Dijkstra's can compute a path but not guaranted to be the shortest.
+  - If graph has negative cycles, special handling is needed to avoid inifinite loops in Dijkstra's.
+    ```python
+    def dijkstra(graph, start):
+        # Priority queue to store (distance, node)
+        pq = [(0, start)]
+        # Dictionary to store the shortest path to each node
+        distances = {node: float('inf') for node in graph}
+        distances[start] = 0
+        # Dictionary to store the path
+        previous_nodes = {node: None for node in graph}
+    
+        while pq:
+            current_distance, current_node = heapq.heappop(pq)
+    
+            # If the distance is greater than the recorded shortest distance, skip
+            if current_distance > distances[current_node]:
+                continue
+    
+            # Iterate through neighbors
+            for neighbor, weight in graph[current_node].items():
+                distance = current_distance + weight
+    
+                # Only consider this new path if it's better
+                if distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    previous_nodes[neighbor] = current_node
+                    heapq.heappush(pq, (distance, neighbor))
+    
+        return distances, previous_nodes
+    ```
+
+  **Bellman-Ford**
+  - Can handle graphs with negative edge weights and is capable of detecting negative weight cycles.
+  - It is slower than Dijkstra's algorithm with a time complexity of $O(V⋅E)$. For dense graph, $E = O(V^2)$.
+    ```python
+    def bellman_ford(graph, source):
+        # Step 1: Initialize distances
+        distance = {v: float('inf') for v in graph.vertices}
+        distance[source] = 0
+    
+        # Step 2: Relax edges |V| - 1 times
+        for _ in range(len(graph.vertices) - 1):
+            for u, v, w in graph.edges:
+                if distance[u] + w < distance[v]:
+                    distance[v] = distance[u] + w
+    
+        # Step 3: Check for negative weight cycles
+        for u, v, w in graph.edges:
+            if distance[u] + w < distance[v]:
+                return "Graph contains a negative weight cycle"
+    
+        return distance
+    ```
+    
+  **Floyd-Warshall**
+  - Can handle graphs with negative edge weights and is capable of detecting negative weight cycles (`if dist[k][k] < 0`).
+  - Run faster in dense graphs (# edges is close to the maximal # edges - $|E| ~ |V|(V – 1)/2$) with time complexity = $O(V^3)$
+    ```python
+    INF = float('inf')
+    def floyd_warshall(graph):
+        n = len(graph)
+        dist = [[INF] * n for _ in range(n)]
+        next_node = [[None] * n for _ in range(n)]
+    
+        # Initialize the distance matrix and next node matrix
+        for i in range(n):
+            for j in range(n):
+                if i == j:
+                    dist[i][j] = 0
+                elif graph[i][j] != INF:
+                    dist[i][j] = graph[i][j]
+                    next_node[i][j] = j
+    
+        # Floyd-Warshall algorithm
+        for k in range(n):
+            for i in range(n):
+                for j in range(n):
+                    if dist[i][k] != INF and dist[k][j] != INF and dist[i][j] > dist[i][k] + dist[k][j]:
+                        dist[i][j] = dist[i][k] + dist[k][j]
+                        next_node[i][j] = next_node[i][k]
+    
+        # Check for negative cycles
+        for k in range(n):
+            if dist[k][k] < 0:
+                return "Graph contains a negative cycle"
+    
+        return dist, next_node
+    ```
+</details>
+
+<details>
+  <summary>Heaps: Binary Heap, K-ary Heap, Fibonacci Heap</summary>
+
+  \
+  **Binary Heap**
+  - Application: Median Maintenance algorithm where we want medians of streamed numbers by having a min heap and a max heap where they are balanced 
+  - Implement heap using a tree-like array where children is greater than parent
+  - Insert and bubble-up if the new node's value is smaller than its parent. $O(log n)$
+    ```c++
+    void heapifyUp(int index) {
+        int parent = (index - 1) / 2;
+        while (index > 0 && heap[index] < heap[parent]) {
+            swap(heap[index], heap[parent]);
+            index = parent;
+            parent = (index - 1) / 2;
+        }
+    }
+  - Pop min, swap it with the last element, and bubble-down (swap with smaller child). $O(log n)$
+    ```c++
+    void heapifyDown(int index) {
+        int left = 2 * index + 1, right = 2 * index + 2, smallest = index;
+
+        if (left < heap.size() && heap[left] < heap[smallest])  smallest = left;
+        if (right < heap.size() && heap[right] < heap[smallest]) smallest = right;
+
+        if (smallest != index) {
+            swap(heap[index], heap[smallest]);
+            heapifyDown(smallest);
+        }
+    }
+    int extractMin() {
+        if (heap.empty())  throw runtime_error("Heap is empty");
+        int minElement = heap[0];
+        heap[0] = heap.back();
+        heap.pop_back();
+        heapifyDown(0);
+        return minElement;
+    }
+    
+    ```
+
+  **K-ary Heap**
+  - Children[A[i]]= [A[k\*i+1], ..., A[k\*i+k]]
+  - Parent[A[i]] = A[floor($\frac{i-1}{k}$)]
+  - Good for many Insert (bubble up is very similar to Binary Heap) and few ExtractMin
+    ```
+    void bubbleDown(int index) {
+        while (true) {
+            int minChildIndex = findMinChildIndex(index);
+            if (minChildIndex == -1 || heap[minChildIndex] >= heap[index])
+                break;
+            swap(heap[index], heap[minChildIndex]);
+            index = minChildIndex;
+        }
+    }
+    
+    int findMinChildIndex(int index) {
+        int startChild = k * index + 1;
+        if (startChild >= heap.size())
+            return -1;
+        int endChild = min(startChild + k, (int)heap.size());
+        int minChildIndex = startChild;
+        for (int i = startChild + 1; i < endChild; ++i) {
+            if (heap[i] < heap[minChildIndex])
+                minChildIndex = i;
+        }
+        return minChildIndex;
+    }
+    ```
+
+**Fibonacci Heap**
+- ExtractMin: return v pointered node `O(1)`
+  - Merge children of delete node into list of roots
+  ```
+
+  ```
+- Insert: `O(1)`
+  - Create a new root node the item
+  - Compare with previous best root, update if neccessary
+- Merge two Fib heap: `O(1)`
+  - Concatenate root lists by changing pointer of the double-linked list
+  - Compare best roots to determine the new root of merged heap
+- Decrease Priority
+  - x is root ⇒ decrease its priority (we might need to check the min flag?)
+  - x is not root ⇒ make it a root node first. x’s parent = p
+    - if p is not root and flag is False ⇒ set it to True
+    - if p is not root and flag is True ⇒ make p the root (we then look at p’s parent…)
+
+    ```
+    def promote(x):
+        if x is not a root
+            p = x.parent
+            p.chlidren.remove(x)
+            x.sibling.remove(x)
+            remove x from sibling list
+            roots.add(x)
+            x.flag = False
+            if p.flag: 
+                promote(p)
+            else if p is not a root:
+                p.flag = True
+    def decreasePriority(x):
+        promote(x)
+        compare x to best root, change if better
+    ```
+</details>
+
+<details>
+  <summary>Tree: BST, Red-Black Tree, AVL Tree</summary>
+
+  \
+  **Binary Search Tree**
+  - MIN/MAX is found by going to left/right child until leaf is found
+  - Pred/Succ
+    - if left/right child exist, get the MAX/MIN of left/right leaf node
+    - if not, find the first possible left/right parent (its right/left child = node's branch). 
+    ```python
+    function findPredecessor(node):
+        if node.left != null:
+            return findMax(node.left)
+        else:
+            parent = node.parent
+            while parent != null and node == parent.left: # first possible "left parent"
+                node = parent
+                parent = parent.parent
+            return parent
+    
+    function findMax(node):
+        while node.right != null:
+            node = node.right
+        return node
+    ```
+  - Deletion
+    - (0-1 child) Replace deleted node with its only child
+    - (2 children) Swap deleted node with pred/succ
+  - Select Problem (k smallest node) needs to keep track of size of the tree on each node
+    - insertion/deletion will updates `size` for all parent nodes
+    - selection
+      ```python
+      def kth_smallest(root, k):
+          current = root
+          while current:
+              left_size = current.left.size if current.left else 0
+              if k == left_size + 1:
+                  return current.value
+              elif k <= left_size:
+                  current = current.left
+              else:
+                  k -= left_size + 1
+                  current = current.right
+          return None
+      ```
+  
+  **Red-Black Tree**
+  - Each node is either red or black. The root is black.
+  - Red/Black Property: No red node can have a red parent. Consequently, every path from a node to its descendant leaves must have the same number of black nodes.
+  - Leaf Nodes: All leaf nodes (NIL nodes or external nodes) are black.
+  - Insertion Rules:
+    - If the tree is empty, insert the new node as the root, coloring it black.
+    - Insert the new node as a red node.
+    - Rebalance the tree if necessary to maintain the Red-Black properties.
+  - Deletion Rules:
+    - Perform standard BST deletion.
+    - If a black node is deleted, adjust the tree to preserve the Red-Black properties (rotation and recoloring if necessary).
+  
+  **AVL Tree**
+  - `diff(height(n.left), height(n.right)) <= 1`
+  - Roatation
+    ```python
+    def _right_rotate(self, y):
+        x = y.left
+        T2 = x.right
+        # Perform rotation
+        x.right = y
+        y.left = T2
+        return x
+    def _left_rotate(self, x):
+        y = x.right
+        T2 = y.left
+        # Perform rotation
+        y.left = x
+        x.right = T2
+        return y
+    ```
+</details>
+
+<details>
+  <summary>Hashing: Linear Probing, Universial Hashing, Cuckcoo Hashing</summary>
+  
+  \
+  **Simple Hash Functions**
+  - Key-value structure. Good for insert/delete/lookup but not good for finding min/max/median
+  - Load factor $\alpha = \frac{m}{n}$ where $m$ = # objects, $n$ = # buckets.
+  - Rules of Thumb for **Choosing Buckets**
+    - Use a prime number of buckets to avoid common factors with data.
+    - Avoid primes close to $2^n$ or $10^n$ to prevent patterns based on data representation.
+  - Division Metho: `hash_value = key % table_size`.
+  - Multiplication Method: `hash_value = floor(a * table_size)` where `a` is in range of (0, 1)
+  - **Double Hashing**: using a secondary hash function to calculate alternative hash locations for keys that collide.
+  - **Hash Chaining**: hash_value -> a Linked_list to store all the values. $\alpha$ is possible to be greater than 1.
+    - $O(1) ~ O(N)$ for insert/search/delete.
+
+  
+  **Linear Probing**
+  - need $\alpha << 1$ to find open slot quickly
+  - $O(1) ~ O(N)$ for insert/search/delete.
+  - try `hash_value + probing_values` until an empty bucket is found.
+    - quadratic probing: `probing_values = 1, 4, 9, ...`
+    - double hashing: `probing_values = 1* h(k), 2*h(l), 3*h(k)...`
+    ```
+    def search(k):
+        i = h(k)
+        while H[i] is nonempty and contains a key != k	#infinite loop if full table
+            i = (i + 1) mod N
+        if H[i] is nonempty: return its value
+        else: exception
+    def set(k,v):
+        i = h(k)
+        while H[i] is nonempty and contains a key != k	#infinite loop
+            i = (i + 1) mod N
+        store (k,v) in H[i]
+    ```
+  - lazy delete
+    - find k by v and mark the cell "nonempty but unused"
+    - nonempty ⇒ search should not be stopped
+    - unused ⇒ set can use
+    - slow down followed search
+  - eager delete
+    ```
+    def eager_delete(k):
+        i = h(k)
+        while H[i] is nonempty and contains a key 6= k
+            i = (i + 1) mod N
+        if H[i] is empty: exception
+        j = (i + 1) mod N
+        while H[j] is nonempty
+            if h(H[j].key) is not in the (circular) range [i+1..j]: 
+            #it was supposed to be at position before i+1
+            # when mod, the range should be [i+1:end] union [0:j]
+            #h(H[j].key) = hash the j’s key
+              move H[j] to H[i]
+              i = j
+            j = j + 1
+        clear H[i]
+    ```
+  
+  **Cuckoo Hashing**
+  - Two tables $H_0$  and $H_1$. load factor $α=n/N<1$
+  - Two hash functions $h_0$  and $h_1$
+  - Search(k): look in both places $H_0 [h_0 (k)]$, $H_1 [h_1 (k)]$
+  - Delete(k): look at both tables and clear if found
+  - Insert(k, v): store the pair in $H_0 [h_0 (k)]$
+    - If pair $(k’, v’)$ exists, evict it and store in $H_1 [h_1 (k')]$
+    - May require another pair (k’’, v’’) from $H_1 [h_1 (k')]$ and sore it in $H_0 [h_0 (k'')]$...
+    - cycle ⇒ fail ⇒ rehash the entire table with different hash functions
+    ```
+    def insert(k,v):
+        t = 0
+        p = (k,v)
+        repeat
+            p ↔ H_t [h_t (k)]  #rotate t = 0 and t = 1
+            if p is null: return
+            if cycle detected:
+                report failure / throw exception [rebuild table]
+            t = 1 - t
+            (k,v) = p
+    ```
+  
+  
+  **Bloom Filter**
+  - Light-weighted hash table.
+    - Each element maps to k-buckets in H. If all k are 1, this element exists. 
+  - Fast insert and loopups. No deletion allowed
+  - False positive rate (return TRUE when that value was not inserted)
+  - Application: spellcheckers (didn't catch some typos), list of forbidden passwords (user can use some of the forbidden password), network routers (keep track of IP)
+  ```
+  
+  
+  ```
+</details>
+
+
 
 ## Greedy Algorithms & Dynamic Programming
 <details>
