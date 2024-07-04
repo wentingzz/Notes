@@ -537,8 +537,44 @@
     ```
 
     **Johnson's Algorithm**
-    - APSP Problem with reweighting techniques
-    - 
+    - Uses a combination of reweighting (to eliminate negative weights) and then applying Dijkstra's algorithm for each vertex.
+      - Adds one weight $p_v$ per vertex $v$. Then, new weight on edge $c'(s,e) = c(s,e) + p_s - p_e$
+      - The middle weights are canceled out. $p_s$ and $p_v$ are the ones left.
+      - Reweighting preserves shortest path
+    - Uses one Bellman-Ford with Dijkstra's => $O(|E||V|log|V|)
+      - Step 1: Adds one starting vertex $s$ where it connects to all vertices with weight 0
+      - Step 2: Compute shortest path from $s$ to all other vertices using Bellman-Ford, the path cost = $p_v$ for each vertex
+        - all path cost should be <= 0
+        - if negative cycle is detected, it's not solvable
+      - Step 3: Run Dijkstra’s Algorithm to every pair of vertices in reweighted graph
+    ```python
+    def johnsons_algorithm(graph):
+        # Step 1
+        new_vertex = 'q'
+        new_edges = graph.edges + [(new_vertex, v, 0) for v in graph.vertices]
+        new_graph = Graph(graph.vertices + [new_vertex], new_edges)
+
+        # Step 2
+        try:
+            h = bellman_ford(new_graph, new_vertex)
+        except ValueError as e:
+            print(e)
+            return None
+        reweighted_edges = [(u, v, w + h[u] - h[v]) for u, v, w in graph.edges]
+        reweighted_graph = Graph(graph.vertices, reweighted_edges)
+        reweighted_graph.adjacency_list = defaultdict(list)
+        
+        #Step 3
+        for u, v, w in reweighted_edges:
+            reweighted_graph.adjacency_list[u].append((v, w))
+    
+        distances = {}
+        for u in graph.vertices:
+            dist = dijkstra(reweighted_graph, u)
+            distances[u] = {v: dist[v] + h[v] - h[u] for v in graph.vertices}
+        
+        return distances
+    ```
 </details>
 
 <details>
