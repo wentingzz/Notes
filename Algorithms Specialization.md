@@ -478,6 +478,9 @@
   **Bellman-Ford**
   - Can handle graphs with negative edge weights and is capable of detecting negative weight cycles.
   - It is slower than Dijkstra's algorithm with a time complexity of $O(V⋅E)$. For dense graph, $E = O(V^2)$.
+  - The vertice budget = 0, 1, 2, ..., # vertices - 2 (exclude start and end vertices)
+  - \# candidate solutions = 1 + in_degree(destination vertex)
+  - Application: internet routing
     ```python
     def bellman_ford(graph, source):
         # Step 1: Initialize distances
@@ -487,18 +490,18 @@
         # Step 2: Relax edges |V| - 1 times
         for _ in range(len(graph.vertices) - 1):
             for u, v, w in graph.edges:
-                if distance[u] + w < distance[v]:
-                    distance[v] = distance[u] + w
+                distance[v] = min(distance[v], distance[u] + w)
     
         # Step 3: Check for negative weight cycles
         for u, v, w in graph.edges:
             if distance[u] + w < distance[v]:
-                return "Graph contains a negative weight cycle"
+                print("Graph contains a negative weight cycle")
     
         return distance
     ```
     
   **Floyd-Warshall**
+  - All-Pairs Shortest Path (APSP)
   - Can handle graphs with negative edge weights and is capable of detecting negative weight cycles (`if dist[k][k] < 0`).
   - Run faster in dense graphs (# edges is close to the maximal # edges - $|E| ~ |V|(V – 1)/2$) with time complexity = $O(V^3)$
     ```python
@@ -532,6 +535,10 @@
     
         return dist, next_node
     ```
+
+    **Johnson's Algorithm**
+    - APSP Problem with reweighting techniques
+    - 
 </details>
 
 <details>
