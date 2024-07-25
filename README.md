@@ -39,9 +39,9 @@ Notes and resources related to search (uniformed search, heuristic search), know
 - `projects/2022-wq-cs-171*`: Previous quiz, midterm and final exams. 
 
 
-### Other Notes
+### CS Notes
 
-Notes on additional subjects that don't fall into the categories above.
+The folder `CS Notes` contains notes on computer science subjects that don't fall into the categories above. It includes:
 - `Android _ Ois App.docx`
 - `Cloud.docx `
 - `CS 236 Assembly Notes.docx `
@@ -53,6 +53,10 @@ Notes on additional subjects that don't fall into the categories above.
 - `MCS 260 Algorithms.docx` 
 - `MCS 261 Data Structure.docx `
 - `Python Notes.docx`
+
+### Other Notes
+
+Notes unrelated to computer science are stored in a folder called `Other Notes`
 
 ## Copyright
 
