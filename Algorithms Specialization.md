@@ -4,7 +4,6 @@
 1. [Divide and Conquer, Sorting](#divide-and-conquer-sorting)
 2. [Graph Search, Shortest Paths, and Data Structures](#graph-search-shortest-paths-and-data-structures)
 3. [Greedy & DP](#greedy-algorithms--dynamic-programming): Scheduling, MST, Huffman; WIS, Knapsack, Sequence Alignment, Optimal BST
-4. [Shortest Paths Revisited, NP-Complete Problems and What To Do About Them](#shortest-paths-revisited-np-complete-problems-and-what-to-do-about-them)
 
 ## Divide and Conquer, Sorting
 <details>
@@ -1125,11 +1124,4 @@
       # Return minimum value
       return cost[i][j] = fsum + Min
   ```
-</details>
-
-## Shortest Paths Revisited, NP-Complete Problems and What To Do About Them
-<details>
-  <summary></summary>
-
-  
 </details>
