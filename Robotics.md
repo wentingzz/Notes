@@ -10,8 +10,12 @@ Robotics Fundations:
   - For each neighbor, update `cost_to_cur`, `esti_final_cost`, `parent_node` if we find a better path
   - If `esti_final_cost > cost_to_cur(final)`, we add this neighbor to minheap
 - Note:
-  - Dijkstra's (`cost_to_cur(n) = esti_final_cost(n)`)
-  - We only underestimate the cost to goal and never overestimate (Otherwise, the optimal may not be correctly sorted in the heap and never be processed. It will return non-optimal solution)
+  - Dijkstra's (`cost_to_cur(n) = esti_final_cost(n)`) is useful when we only know the edges without nodes position.
+  - If we know coordinates of the nodes, some typical heuristic functions can be
+    - Manhattan Distance (grid-based problems + four directions) = `dx + dy`.
+    - Euclidean Distance (diagonal movement) = `sqrt((dx)² + (dy)²))`
+    - Octile Distance (8-directional movement) = `max(dx, dy) + (√2 - 1) * min(dx, dy)`
+  - We only **underestimate** the cost to goal and never overestimate (Otherwise, the optimal may not be correctly sorted in the heap and never be processed. It will return non-optimal solution)
 - <details>
   <summary>Code</summary>
   
