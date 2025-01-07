@@ -74,3 +74,17 @@ Robotics Fundations:
   ```
 </details>
 
+- Grid Representation: Divide each of the `n` dimensions into `k` spaces => `n^k` cells of C-space representation. Costly if `n` or `k` grows.
+- Multi-Resolution Grid: Grow collision node to get fineer resolution. Free space will be blurry resolution. Less costly
+- PRM (Probablistic RoadMap): randomly select free space, connect nearby neighbors if no collision, connect start_node, goal_node to the graph (no collision). Good for multi-query (one graph for multiple starts/goals)
+  - sampling over uniform/un-uniform distribution over C space.
+  - sampling by deterministic algorithm (Van der Corput (binary-search-tree-like), Halton sequence (
+- Randomly Exploring Random Tree (RRT): randomly sample a new node `n_samp`, find the nearst neighbor `n_neig` and connect it to `n_new` (`n_new` is between `n_samp` and `n_neig` but has no collision. If there is collision, discard this sample), do so until `n_new` is inside goal space. Better than Random Walk because it explores more in C space.
+- Attractive/Repulsive Potential Obstacle (may stuck in local minimums)
+  - Command robot forces equal to the negative of the gradient of P, plus some damping forces (to reduce or eliminate oscillation of the robot about the goal configuration).
+  - Command robot velocities equal to the negative of the gradient of P (Under this velocity control law, the robot is treated as a kinematic system (not a second-order dynamic system), and there is no oscillation).
+- To minimize cost of motion:
+  - Shooting: try motion, adjust collision points and retry until it's collision free and minimize the cost.
+  - Collocation:
+  - Transcription:  
+
