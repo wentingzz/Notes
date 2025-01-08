@@ -85,6 +85,15 @@ Robotics Fundations:
   - Command robot velocities equal to the negative of the gradient of P (Under this velocity control law, the robot is treated as a kinematic system (not a second-order dynamic system), and there is no oscillation).
 - To minimize cost of motion:
   - Shooting: try motion, adjust collision points and retry until it's collision free and minimize the cost.
+    - The gradient of a representation of the trajectory with respect to the controls (sensitivity of the trajectory with respect to the controls)
+    - The gradient of the constraints with respect to the trajectory (sensitivity of the constraints with respect to the trajectory)
+    - The gradient of the cost with respect to the controls (change the controls to reduce the cost)
   - Collocation:
   - Transcription:  
 
+Control System
+- `e_ss` stable-state error response (accepatable final stable state with some error) (`e_ss` = 0 is better)
+- transient error response: 
+  - `overshoot` negative (`theta` > `theta_d`) difference between state and `e_ss` (no overshoot is better)
+  - `settle_time` time to settle in range of \[0, `e_ss`\] (no settle_time is better)
+- 
