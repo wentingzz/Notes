@@ -96,4 +96,19 @@ Control System
 - transient error response: 
   - `overshoot` negative (`theta` > `theta_d`) difference between state and `e_ss` (no overshoot is better)
   - `settle_time` time to settle in range of \[0, `e_ss`\] (no settle_time is better)
-- 
+- Linear Error Dynmaics (can be homogeneous or nonhomogeneous)
+  - like mass-spring-damper. `theta_e` (error dynamics) = position of the mass `m` = linear ordinary differential equation = `m * theta_e'' + b * theta_e ' + k * theta_e`
+  - Designing a controller = choosing the spring constant `k` and the damping constant `b`.
+    - Large `k` => spring pulls the error toward zero faster
+    - Large `b` => less overshoot and oscillation
+  - In pth-order linear differential equation, A necessary condition for stability is that all coefficients `a_i'` be positive. The real components of all the eigenvalues must be negative.
+  - Standard First-Order equation `theta_e(t)' + theta_e(t) / t = 0` where `t = b/k` is stable if `t > 0`
+    - time constant `t` of the decay = `1/a`
+    - Small `t` (spring gets stiffer or the damper gets softer) => fast decay (steady-state error = 0, overshoot = 0)
+    - 2% settling time (time for the error to decay to 2 percent of its initial value) = `4k`
+  - Standard Second-Order Equation `theta_e(t)'' + 2*c*w * theta_e(t)' + w*w + theta_e(t) = 0` where natural frequency `w = sqrt(k/m)`, damping ratio `c = b/(2*sqrt(k*m))`
+    - `c > 1` two solution overdamped. (larger solution => fast settling time, positive solution => unstable)
+    - `c = 1` one solution critically damped. 2% settling time = 4/w
+    - `c < 1` complex number solution underdamped. 2% settling time = 4/w. Incresing overshoot
+
+
