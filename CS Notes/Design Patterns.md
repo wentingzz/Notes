@@ -140,7 +140,61 @@ Structural Pattern: to define relationship between objects
 <details>
   <summary>Facade</summary>
 
+  - Wrapper class to encapsulate subsytem while hiding details/complexities of the subsystem.
+  - Key ideas: encapsulation, information hiding, separation of concerns
+  - Subsystems should be private variables to hide the details (less coupling)
+  ```cpp
+  class IAccount {
+  public:
+      virtual void deposit(double amount) = 0;
+      virtual void withdraw(double amount) = 0;
+      virtual ~IAccount() = default;
+  };
   
+  class CheckingAccount : public IAccount {
+      void deposit(double amount) override {
+          std::cout << "Deposited $" << amount << " into Checking Account.\n";
+      }
+      void withdraw(double amount) override {
+          std::cout << "Withdrew $" << amount << " from Checking Account.\n";
+      }
+  };
+  //class SavingsAccount : public IAccount {...}
+  
+  class BankService {
+  private:
+      unordered_map<int, unique_ptr<IAccount>> bankAccounts; // Map of account ID to account object
+      int nextAccountId = 1;
+  
+  public:
+      int createNewAccount(const string& type, int initialAmount) {
+          unique_ptr<IAccount> account; // Create the appropriate account type based on the input
+          if (type == "Checking") account = make_unique<CheckingAccount>();
+          else if (type == "Savings") account = make_unique<SavingsAccount>();
+          else if (type == "Investment") account = make_unique<InvestmentAccount>();
+  
+          account->deposit(initialAmount); // Initialize the account with the initial deposit
+          int accountId = nextAccountId++; 
+          bankAccounts[accountId] = move(account); // Assign the account an ID and store it in the map
+          return accountId;
+      }
+  
+      void transferFromAccountToAccount(int fromId, int toId, double amount) {
+          if (bankAccounts.find(fromId) != bankAccounts.end() and bankAccounts.find(toId) != bankAccounts.end()) {
+              bankAccounts[fromId]->withdraw(amount);
+              bankAccounts[toId]->deposit(amount);
+          }
+      }
+  };
+  
+  int main() {
+      BankService bankService;
+      int account1 = bankService.createNewAccount("Checking", 1000);
+      int account2 = bankService.createNewAccount("Savings", 2000);
+      bankService.transferFromAccountToAccount(account1, account2, 500); // Deposit to accounts
+      return 0;
+  }
+  ```
 </details>
 
 <details>
