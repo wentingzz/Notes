@@ -4,7 +4,7 @@ Creational Pattern: for object creation
   <summary>Singleton</summary>
   
   - only one object accessible globally
-  - Singleton's constructor/destructor should always be private to prevent direct construction/desctruction calls with the `new`/`delete` operator
+  - Implementation: Singleton's constructor/destructor should always be private to prevent direct construction/desctruction calls with the `new`/`delete` operator
   ```cpp
   class Singleton {
   private:
@@ -35,6 +35,10 @@ Creational Pattern: for object creation
   <summary>Factory</summary>
 
   - Factory Object: one factory for creating all objects
+  - Implementation:
+    - TypeInterface (for clients to interact with)
+    - Type1, Type2 inherit TypeInterface for same behavior
+    - TypeFactory contains method to create TypeInterface object
   ```cpp
   // Product Interface
   class Shape {
@@ -76,6 +80,11 @@ Creational Pattern: for object creation
   ```
 
   - Factory Method Pattern: sub-factory classes define their own creations
+  - Implementation
+    - TypeInterface for clients to interact with
+    - Type1, Type2 inherit TypeInterface for same behavior
+    - TypeFactory for clients to interact with
+    - Type1Factory, Type2Factory inherit TypeFactory to create different types of object
   ```cpp
   // Interface Meat class
   class Meat {
@@ -143,6 +152,9 @@ Structural Pattern: to define relationship between objects
   - Wrapper class to encapsulate subsytem while hiding details/complexities of the subsystem.
   - Key ideas: encapsulation, information hiding, separation of concerns
   - Subsystems should be private variables to hide the details (less coupling)
+  - Implementation:
+    - Type1, Type2 inherit TypeInterface for same behavior
+    - Wrapper class knows TypeInterface and hides the interaction among them
   ```cpp
   class IAccount {
   public:
@@ -200,34 +212,296 @@ Structural Pattern: to define relationship between objects
 <details>
   <summary>Adapter</summary>
 
+  - Provides abstraction interface of the third-party classes for the clients to interact with.
+  - Eliminates the risk of breaking subsystem (target) while not changing the third-party library (adaptee)
+  - Implementation:
+    - TargetInterface for clients to interact with
+    - Adaptee class for incompatible behaviors
+    - Adapter inherit TargetInterface
+
+  ```cpp
+  // Target class
+  class CoffeMachineInterface{
+  public:
+      CoffeMachineInterface(){};
+      virtual void chooseFirstSelection() = 0;
+      virtual void chooseSecondSelection() = 0;
+      
+  };
+
+  // Adaptee class
+  class OldCoffeeMachine{
+  public:
+      void selectA(){
+          cout << "Old machine A selected" <<endl;
+      }
+      void selectB(){
+          cout << "Old machine B selected" <<endl;
+      }
+  };
   
+  class CoffeeTouchscreenAdapter: public CoffeMachineInterface{
+  private:
+      OldCoffeeMachine* oldMachine;
+  public:
+      void connect(OldCoffeeMachine* om){
+          oldMachine = om;
+      }
+      void chooseFirstSelection() override{
+          oldMachine->selectA();
+      }
+      void chooseSecondSelection() override{
+          oldMachine->selectB();
+      }
+  };
+  
+  int main(){
+      OldCoffeeMachine ocm;
+      CoffeeTouchscreenAdapter adapter;
+      adapter.connect(&ocm);
+      adapter.chooseFirstSelection();
+      return 0;
+  }
+  ```
 </details>
 
 <details>
   <summary>Composite</summary>
 
+  - Deals with nested objects/structures by enforcing polymorphism and building a tree-like structure.
+  - Leaf & composite both inheritate from the same interface while composite can grow the tree and leaf ends the tree
+  - Implementation:
+    - CompositeInterface
+    - Leaf (1 CompositeInterface), CompositeObject (mulitple instances of CompositeInterface) inherit CompositeInterface
+  ```cpp
+  // Component interface (base class for all shapes)
+  class Graphic {
+  public:
+      virtual void draw() const = 0; // Pure virtual method
+      virtual ~Graphic() = default;  // Virtual destructor
+  };
   
+  // Leaf class (simple shapes like Circle and Rectangle)
+  class Circle : public Graphic {
+  public:
+      void draw() const override {
+          cout << "Drawing a Circle\n";
+      }
+  };
+  
+  // Composite class (a group of shapes)
+  class CompositeGraphic : public Graphic {
+  private:
+      vector<Graphic*> children; // List of child graphics
+  
+  public:
+      ~CompositeGraphic() {
+          for (auto child : children) {
+              delete child; // Ensure proper cleanup
+          }
+      }
+  
+      void add(Graphic* graphic) {
+          children.push_back(graphic);
+      }
+  
+      void remove(Graphic* graphic) {
+          children.erase(remove(children.begin(), children.end(), graphic), children.end());
+      }
+  
+      void draw() const override {
+          cout << "Drawing a CompositeGraphic containing:\n";
+          for (const auto& child : children) {
+              child->draw();
+          }
+      }
+  };
+  
+  // Client code
+  int main() {
+      // Create simple shapes
+      Circle* circle1 = new Circle();
+      Circle* circle2 = new Circle();
+      // Create a composite graphic
+      CompositeGraphic* group = new CompositeGraphic();
+      group->add(circle1);
+      // Create another composite group and nest it
+      CompositeGraphic* nestedGroup = new CompositeGraphic();
+      nestedGroup->add(circle2);
+      nestedGroup->add(group);
+      // Draw everything
+      nestedGroup->draw();
+      // Clean up
+      delete nestedGroup; // This also deletes `group`, `circle1`, `circle2`, and `rectangle`.
+      return 0;
+  }
+  ```
 </details>
 
 <details>
   <summary>Proxy</summary>
 
-  
+  - Represents a simplified, lighter version of the original object and Behaves the same but may request the action of original object
+  - Purpose: smaller proxy (saves space when original object is too large), protection proxy (sensitive data in original one or role-based access control), remote proxy (real one exists in Cloud and you work on virtual one to update periodically).
+  - Implementation:
+    - ObjectInterface
+    - Proxy (1 lazy reference to Object), Object inherit ObjectInterface
+
+  ```cpp
+// Subject Interface (common interface for RealSubject and Proxy)
+class Image {
+public:
+    virtual void display() const = 0; // Interface method
+    virtual ~Image() = default;
+};
+
+// RealSubject class (heavy object)
+class HighResolutionImage : public Image {
+private:
+    string filename;
+    void loadFromDisk() const {
+        cout << "Loading high-resolution image from disk: " << filename << endl;
+    }
+
+public:
+    HighResolutionImage(const string& file) : filename(file) {
+        loadFromDisk(); // Simulate expensive operation
+    }
+    void display() const override {
+        cout << "Displaying high-resolution image: " << filename << endl;
+    }
+};
+
+// Proxy class
+class ImageProxy : public Image {
+private:
+    string filename;
+    mutable HighResolutionImage* realImage; // Lazy-loaded
+
+public:
+    ImageProxy(const string& file) : filename(file), realImage(nullptr) {}
+    ~ImageProxy() {
+        delete realImage; // Ensure proper cleanup
+    }
+    void display() const override {
+        if (!realImage) {
+            realImage = new HighResolutionImage(filename); // Load image lazily
+        }
+        realImage->display();
+    }
+};
+
+// Client code
+int main() {
+    // Client uses the Proxy instead of directly using the real object
+    Image* image = new ImageProxy("example.jpg");
+    image->display(); // Image is loaded and displayed only when needed
+    delete image; // Cleanup
+    return 0;
+}
+```
 </details>
 
 <details>
   <summary>Decorator</summary>
 
+  - Attaches a stack of behaviors to an object by adding a "has-a" relationship via aggregations
+  - Implementation:
+    - BasicObjectInterface (for clients to interact with)
+    - BasicObject and DecoratorInterface implements BasicObjectInterface (is a type of)
+    - DecoratorA, DecoratorB ... implements DecoratorInterface
+
+  ```cpp
+  // Base interface for Coffee
+  class Coffee {
+  public:
+      virtual ~Coffee() {}
+      virtual double cost() const = 0;
+  };
   
+  // Concrete implementation of the Basic Coffee class
+  class SimpleCoffee : public Coffee {
+  public:
+      double cost() const override {
+          return 5.0;
+      }
+  };
+  
+  // Interface for CoffeeDecorator
+  class CoffeeDecorator : public Coffee {
+  public:
+      virtual ~CoffeeDecorator() {}
+  };
+  
+  // Concrete decorator: Milk
+  class MilkDecorator : public CoffeeDecorator {
+  private:
+      Coffee* coffee;
+  public:
+      MilkDecorator(Coffee* coffee) : coffee(coffee) {}
+      double cost() const override {
+          return coffee->cost() + 1.5; // Adding cost for milk
+      }
+  };
+  
+  
+  // Main function to demonstrate the decorator pattern
+  int main() {
+      // Create a simple coffee
+      Coffee* myCoffee = new SimpleCoffee();
+      myCoffee = new MilkDecorator(myCoffee); // Add milk to the coffee
+      delete myCoffee; // Clean up
+      return 0;
+  }
+  ```
 </details>
 
 Behavioral Pattern: to define how objects behave and achieve the common goal
 -
 <details>
-  <summary></summary>
+  <summary>Template Method</summary>
 
   
 </details>
+
+<details>
+  <summary>Chain of Responsibility</summary>
+
+  
+</details>
+
+<details>
+  <summary>State</summary>
+
+  
+</details>
+
+<details>
+  <summary>Undo/Redo As a Pattern</summary>
+
+  
+</details>
+
+<details>
+  <summary>Command</summary>
+
+  
+</details>
+
+<details>
+  <summary>Mediator</summary>
+
+  
+</details>
+
+<details>
+  <summary>Observer</summary>
+
+  
+</details>
+
+
+
 <details>
   <summary></summary>
 
