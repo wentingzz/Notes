@@ -456,24 +456,184 @@ int main() {
   ```
 </details>
 
-Behavioral Pattern: to define how objects behave and achieve the common goal
+Behavioral Pattern: to define how objects collaborate and achieve the common goal
 -
 <details>
   <summary>Template Method</summary>
 
+  - Template class contains common steps while derived class contains special steps
+  - Implementation:
+    - TemplateAbstractClass has virtual methods for special steps and concrete methods for common steps (including `virtual` gives derived class the ability to override)
+    - ConcreteObject inherits TemplateAbstractClass and overrides special steps 
+  ```cpp
+  // Abstract Base Class
+  class PastaDish {
+  public:
+      // Template Method
+      void makeRecipe()  {
+          boilWater();
+          addPasta();
+          addSauce();
+          addProtein();
+      }
   
+  protected:
+      virtual void addPasta() = 0; // Abstract methods to be implemented by subclasses
+      virtual void addSauce() = 0;
+      virtual void addProtein() = 0;
+  
+  private:
+      void boilWater() { // Common step
+          std::cout << "Boiling water.\n";
+      }
+  };
+  
+  // Concrete Subclass: Spaghetti with Meatballs
+  class SpaghettiMeatballs : public PastaDish {
+  protected:
+      void addPasta() override {
+          std::cout << "Adding spaghetti noodles.\n";
+      }
+  
+      void addSauce() override {
+          std::cout << "Adding tomato sauce.\n";
+      }
+  
+      void addProtein() override {
+          std::cout << "Adding meatballs.\n";
+      }
+  
+  };
+  
+  // Concrete Subclass: Penne Alfredo
+  class PenneAlfredo : public PastaDish {
+  protected:
+      void addPasta() override {
+          std::cout << "Adding penne noodles.\n";
+      }
+  
+      void addSauce() override {
+          std::cout << "Adding Alfredo sauce.\n";
+      }
+  
+      void addProtein() override {
+          std::cout << "Adding grilled chicken.\n";
+      }
+  
+  };
+  
+  // Main Function
+  int main() {
+      SpaghettiMeatballs spaghettiDish;
+      PenneAlfredo penneDish;
+  
+      std::cout << "Making Spaghetti with Meatballs:\n";
+      spaghettiDish.makeRecipe();
+  
+      std::cout << "\nMaking Penne Alfredo:\n";
+      penneDish.makeRecipe();
+  
+      return 0;
+  }
+  ```
 </details>
 
 <details>
   <summary>Chain of Responsibility</summary>
 
+  - Requests are handled/tried with different handlers until we succeed or run out of handlers
+  - Purpose: multi-filters
+  - Implementation:
+    - AbstractHandler with template steps (if fails, call next handler)
+    - ConcreteHandler with special steps (check if rules matches. If matches, do something)
+  ```cpp
+  // Abstract Base Class for Handlers
+  class SupportHandler {
+  protected:
+      SupportHandler* nextHandler = nullptr; // Pointer to the next handler in the chain
   
+  public:
+      void setNextHandler(SupportHandler* handler) {
+          nextHandler = handler;
+      }
+      void handleRequest(const std::string& issue){
+          bool handled = handling(issue);
+          if(handled) return;
+          if (nextHandler) nextHandler->handleRequest(issue);
+          else std::cout << "Frontline Support: Unable to handle the request.\n";
+      };
+      virtual bool handling(const std::string& issue) = 0;
+  };
+  
+  // Concrete Handler: Frontline Support
+  class FrontlineSupport : public SupportHandler {
+  public:
+      bool handling(const std::string& issue) override {
+          if (issue == "basic") {
+              std::cout << "Frontline Support: Handled the basic issue.\n";
+              return true;
+          }
+          return false;
+      }
+  };
+  
+  // Concrete Handler: Technical Support
+  class TechnicalSupport : public SupportHandler {
+  public:
+      bool handling(const std::string& issue) override {
+          if (issue == "technical") {
+              std::cout << "Technical Support: Handled the technical issue.\n";
+              return true;
+          }
+          return false;
+      }
+  };
+  
+  // Concrete Handler: Manager Support
+  class ManagerSupport : public SupportHandler {
+  public:
+      bool handling(const std::string& issue) override {
+          if (issue == "management") {
+              std::cout << "Manager Support: Handled the management issue.\n";
+              return true;
+          }
+          return false;
+      }
+  };
+  
+  // Main Function
+  int main() {
+      // Handlers
+      FrontlineSupport frontline;
+      TechnicalSupport technical;
+      ManagerSupport manager;
+  
+      // Setting up the chain
+      frontline.setNextHandler(&technical);
+      technical.setNextHandler(&manager);
+  
+      // Test cases
+      std::cout << "Sending 'basic' request:\n";
+      frontline.handleRequest("basic");
+  
+      std::cout << "\nSending 'management' request:\n";
+      frontline.handleRequest("management");
+  
+      std::cout << "\nSending 'unknown' request:\n";
+      frontline.handleRequest("unknown");
+      return 0;
+  }
+  
+  ```
 </details>
 
 <details>
   <summary>State</summary>
 
-  
+  - Used when behavior changes if state changes
+  ```cpp
+
+```
 </details>
 
 <details>
