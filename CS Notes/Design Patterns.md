@@ -631,15 +631,147 @@ Behavioral Pattern: to define how objects collaborate and achieve the common goa
   <summary>State</summary>
 
   - Used when behavior changes if state changes
+  - Implementation:
+    - StateInterface has common virtual methods (behaviors)
+    - Object class has the following
+      - constructor placeholder (to be implemented later)
+      - state objects with getters
+      - same behavior methods. Each calls current_state's virtual behavior method
+    - ConcreteState inherits StateInterface and overrides virtual behavior methods
+    - Object constructor is implemented
   ```cpp
-
-```
-</details>
-
-<details>
-  <summary>Undo/Redo As a Pattern</summary>
-
+  // Forward declaration of VendingMachine
+  class VendingMachine;
   
+  // State Interface
+  class State {
+  public:
+      virtual void insertDollar(VendingMachine* vendingMachine) = 0;
+      virtual void ejectMoney(VendingMachine* vendingMachine) = 0;
+      virtual void dispense(VendingMachine* vendingMachine) = 0;
+      virtual ~State() = default;
+  };
+  
+  // VendingMachine Class
+  class VendingMachine {
+  private:
+      State* idleState;
+      State* hasOneDollarState;
+      State* outOfStockState;
+  
+      State* currentState;
+      int stock;
+  
+  public:
+      VendingMachine(int count); //constructor implemented later because concrete states are not created yet
+  
+      void setState(State* state) { currentState = state; }
+      State* getIdleState() { return idleState; }
+      State* getHasOneDollarState() { return hasOneDollarState; }
+      State* getOutOfStockState() { return outOfStockState; }
+  
+      void insertDollar() { currentState->insertDollar(this); }
+      void ejectMoney() { currentState->ejectMoney(this); }
+      void dispense() { currentState->dispense(this); }
+  
+      void releaseProduct() {
+          if (stock > 0) {
+              stock--;
+              cout << "Product dispensed. Remaining stock: " << stock << "\n";
+          }
+      }
+  
+      int getStock() const { return stock; }
+  };
+  
+  // IdleState Class
+  class IdleState : public State {
+  public:
+      void insertDollar(VendingMachine* vendingMachine) override {
+          cout << "Dollar inserted.\n";
+          vendingMachine->setState(vendingMachine->getHasOneDollarState());
+      }
+  
+      void ejectMoney(VendingMachine* vendingMachine) override {
+          cout << "No money to return. Machine is idle.\n";
+      }
+  
+      void dispense(VendingMachine* vendingMachine) override {
+          cout << "Payment required before dispensing.\n";
+      }
+  };
+  
+  // HasOneDollarState Class
+  class HasOneDollarState : public State {
+  public:
+      void insertDollar(VendingMachine* vendingMachine) override {
+          cout << "Already have one dollar.\n";
+      }
+  
+      void ejectMoney(VendingMachine* vendingMachine) override {
+          cout << "Returning money.\n";
+          vendingMachine->setState(vendingMachine->getIdleState());
+      }
+  
+      void dispense(VendingMachine* vendingMachine) override {
+          if (vendingMachine->getStock() > 1) {
+              vendingMachine->releaseProduct();
+              vendingMachine->setState(vendingMachine->getIdleState());
+          } else {
+              vendingMachine->releaseProduct();
+              vendingMachine->setState(vendingMachine->getOutOfStockState());
+          }
+      }
+  };
+  
+  // OutOfStockState Class
+  class OutOfStockState : public State {
+  public:
+      void insertDollar(VendingMachine* vendingMachine) override {
+          cout << "Machine is out of stock. Returning your dollar.\n";
+      }
+  
+      void ejectMoney(VendingMachine* vendingMachine) override {
+          cout << "No money to return. Machine is out of stock.\n";
+      }
+  
+      void dispense(VendingMachine* vendingMachine) override {
+          cout << "Cannot dispense. Machine is out of stock.\n";
+      }
+  };
+  
+  // Implementation of VendingMachine Constructor
+  VendingMachine::VendingMachine(int count) : stock(count) {
+      idleState = new IdleState();
+      hasOneDollarState = new HasOneDollarState();
+      outOfStockState = new OutOfStockState();
+  
+      currentState = (stock > 0) ? idleState : outOfStockState;
+  }
+  
+  // Main Function
+  int main() {
+      VendingMachine machine(2); // Initialize vending machine with 2 items in stock
+  
+      cout << "--- Test Case 1: Insert dollar and dispense product ---\n";
+      machine.insertDollar();
+      machine.dispense();
+  
+      cout << "\n--- Test Case 2: Try to dispense without inserting money ---\n";
+      machine.dispense();
+  
+      cout << "\n--- Test Case 3: Eject money ---\n";
+      machine.insertDollar();
+      machine.ejectMoney();
+  
+      cout << "\n--- Test Case 4: Out of stock ---\n";
+      machine.insertDollar();
+      machine.dispense(); // Dispense last product
+      machine.insertDollar(); // Try to buy when out of stock
+  
+      return 0;
+  }
+  ```
 </details>
 
 <details>
@@ -661,9 +793,51 @@ Behavioral Pattern: to define how objects collaborate and achieve the common goa
 </details>
 
 
+MVC Pattern: 
+-
 
 <details>
   <summary></summary>
 
   
+</details>
+
+<details>
+  <summary></summary>
+
+  
+</details>
+
+Design Principles Underlying Design Patterns
+-
+
+<details>
+  <summary>Liskow Substitution</summary>
+</details>
+
+<details>
+  <summary>Open/Closed</summary>
+</details>
+
+<details>
+  <summary>Dependency Inversion</summary>
+</details>
+
+<details>
+  <summary>Composing Object</summary>
+</details>
+
+<details>
+  <summary>Interface Segregation</summary>
+</details>
+
+<details>
+  <summary>Least Knowledge</summary>
+</details>
+
+Anti-Patterns
+-
+
+<details>
+  <summary>Bad Coding</summary>
 </details>
