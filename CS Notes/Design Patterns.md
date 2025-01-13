@@ -777,19 +777,322 @@ Behavioral Pattern: to define how objects collaborate and achieve the common goa
 <details>
   <summary>Command</summary>
 
+  - Schedule tasks, redo/undo
+  - Implementation:
+    - CommandInterface
+    - ConcreteCommand inherits CommandInterface and keeps a reference to Receiver
+    - CommandManager keeps track of undo/redo list of ConcreteCommand
+    - Receiver has actions for ConcreteCommand to call.
+  ```cpp
+  // Abstract Command class
+  class Command {
+  public:
+      virtual ~Command() = default;
+      virtual void execute() = 0;
+      virtual void unexecute() = 0;
+      virtual bool isReversible() const = 0;
+  };
   
+  // Receiver class
+  class Document {
+  public:
+      void insertText(const std::string& text, size_t position) {
+          content.insert(position, text);
+          std::cout << "Inserted text: \"" << text << "\" at position " << position << std::endl;
+      }
+  
+      void deleteText(size_t position, size_t length) {
+          if (position + length <= content.size()) {
+              content.erase(position, length);
+              std::cout << "Deleted text of length " << length << " from position " << position << std::endl;
+          }
+      }
+  
+      void display() const {
+          std::cout << "Document content: \"" << content << "\"" << std::endl;
+      }
+  
+  private:
+      std::string content;
+  };
+  
+  // Concrete Command for "Paste" operation
+  class PasteCommand : public Command {
+  public:
+      PasteCommand(Document& doc, const std::string& text, size_t position)
+          : document(doc), textToInsert(text), position(position) {}
+  
+      void execute() override {
+          document.insertText(textToInsert, position);
+          executed = true;
+      }
+  
+      void unexecute() override {
+          if (executed) {
+              document.deleteText(position, textToInsert.length());
+          }
+      }
+  
+      bool isReversible() const override {
+          return true;
+      }
+  
+  private:
+      Document& document;
+      std::string textToInsert;
+      size_t position;
+      bool executed = false;
+  };
+  
+  // Invoker (Command Manager)
+  class CommandManager {
+  public:
+      ~CommandManager() {
+          clearHistory();
+      }
+  
+      void executeCommand(Command* command) {
+          if (command->isReversible()) {
+              command->execute();
+              history.push(command);
+          } else {
+              command->execute();
+              delete command;
+          }
+      }
+  
+      void undo() {
+          if (!history.empty()) {
+              Command* command = history.top();
+              command->unexecute();
+              delete command;
+              history.pop();
+          } else {
+              std::cout << "No commands to undo!" << std::endl;
+          }
+      }
+  
+  private:
+      void clearHistory() {
+          while (!history.empty()) {
+              delete history.top();
+              history.pop();
+          }
+      }
+  
+      std::stack<Command*> history;
+  };
+  
+  // Client
+  int main() {
+      Document doc;
+      CommandManager commandManager;
+      // Paste operation
+      Command* pasteCommand1 = new PasteCommand(doc, "Hello", 0);
+      commandManager.executeCommand(pasteCommand1);
+      // Paste another text
+      Command* pasteCommand2 = new PasteCommand(doc, " World", 5);
+      commandManager.executeCommand(pasteCommand2);
+      doc.display();
+      // Undo the last command
+      commandManager.undo();
+      doc.display();
+      commandManager.undo();
+      doc.display();
+  
+      return 0;
+  }
+  ```
 </details>
 
 <details>
   <summary>Mediator</summary>
 
+  - Advantages: Loose coupling between colleagues allows for easier reuse and maintainability, with centralized interaction logic improving readability and extensibility.
+  - Disadvantages: The mediator can become overly large and complex, making it harder to debug and potentially undermining the benefits of centralization.
+  - Implementation:
+    - Mediator and Colleague interfaces
+    - ConcreteColleague1, ConcreteColleague2 inherit Colleague
+    - ConcreteMediator inherits Mediator and know ConcreteColleague1, ConcreteColleague2
+  ```cpp
+  // Forward declarations
+  class HouseMediator;
   
+  // Abstract Colleague class
+  class Colleague {
+  protected:
+      HouseMediator* mediator;
+  public:
+      Colleague(HouseMediator* mediator) : mediator(mediator) {}
+      virtual ~Colleague() {}
+      virtual void notify(const std::string& event) = 0;
+  };
+  
+  // Mediator Interface
+  class HouseMediator {
+  public:
+      virtual ~HouseMediator() {}
+      virtual void notify(Colleague* sender, const std::string& event) = 0;
+  };
+  
+  // Concrete Colleague classes
+  class Phone : public Colleague {
+  public:
+      Phone(HouseMediator* mediator) : Colleague(mediator) {}
+      void alarmGoesOff() {
+          std::cout << "Phone: Alarm is going off.\n";
+          mediator->notify(this, "Alarm");
+      }
+      void notify(const std::string& event) override {}
+  };
+  
+  class CoffeeMaker : public Colleague {
+  public:
+      CoffeeMaker(HouseMediator* mediator) : Colleague(mediator) {}
+      void brewCoffee() {
+          std::cout << "CoffeeMaker: Brewing coffee.\n";
+      }
+      void notify(const std::string& event) override {}
+  };
+  
+  class Tablet : public Colleague {
+  public:
+      Tablet(HouseMediator* mediator) : Colleague(mediator) {}
+      void loadNewspaper() {
+          std::cout << "Tablet: Loading the latest Globe and Mail.\n";
+      }
+      void notify(const std::string& event) override {}
+  };
+  
+  // Concrete Mediator
+  class ConcreteHouseMediator : public HouseMediator {
+  private:
+      Phone* phone;
+      CoffeeMaker* coffeeMaker;
+      Tablet* tablet;
+  
+  public:
+      void setPhone(Phone* phone) { this->phone = phone; }
+      void setCoffeeMaker(CoffeeMaker* coffeeMaker) { this->coffeeMaker = coffeeMaker; }
+      void setTablet(Tablet* tablet) { this->tablet = tablet; }
+  
+      void notify(Colleague* sender, const std::string& event) override {
+          if (event == "Alarm") {
+              std::cout << "Mediator: Handling 'Alarm' event.\n";
+              coffeeMaker->brewCoffee();
+              tablet->loadNewspaper();
+          }
+      }
+  };
+  
+  // Main function
+  int main() {
+      ConcreteHouseMediator mediator;
+  
+      Phone phone(&mediator);
+      CoffeeMaker coffeeMaker(&mediator);
+      Tablet tablet(&mediator);
+  
+      mediator.setPhone(&phone);
+      mediator.setCoffeeMaker(&coffeeMaker);
+      mediator.setTablet(&tablet);
+  
+      // Simulate alarm going off
+      phone.alarmGoesOff();
+  
+      return 0;
+  }
+  ```
 </details>
 
 <details>
   <summary>Observer</summary>
 
+  - Implementation:
+    - Subscriber inherits Observer and gets the notification if new changes to a post
+    - Post inherits Subject and keeps a list of Observers to notify
+
+  ```cpp
+  // Observer Interface
+  class Observer {
+  public:
+      virtual ~Observer() {}
+      virtual void update(const std::string& blogPost) = 0; // Notify observer of a change
+  };
   
+  // Subject Base Class
+  class Subject {
+  protected:
+      std::vector<Observer*> observers;
+  
+  public:
+      virtual ~Subject() {}
+  
+      void registerObserver(Observer* observer) {
+          observers.push_back(observer);
+      }
+  
+      void unregisterObserver(Observer* observer) {
+          observers.erase(std::remove(observers.begin(), observers.end(), observer), observers.end());
+      }
+  
+      void notifyObservers(const std::string& blogPost) {
+          for (Observer* observer : observers) observer->update(blogPost);
+      }
+  };
+  
+  // Concrete Subject (Blog)
+  class Blog : public Subject {
+  private:
+      std::string latestPost;
+  
+  public:
+      void addPost(const std::string& post) {
+          latestPost = post;
+          notifyObservers(latestPost); // Notify all subscribers of the new post
+      }
+  };
+  
+  // Concrete Observer (Subscriber)
+  class Subscriber : public Observer {
+  private:
+      std::string name;
+  
+  public:
+      Subscriber(const std::string& name) : name(name) {}
+  
+      void update(const std::string& blogPost) override {
+          std::cout << "Subscriber " << name << " received notification: New blog post -> " << blogPost << "\n";
+      }
+  };
+  
+  // Main Function
+  int main() {
+      // Create blog
+      Blog blog;
+  
+      // Create subscribers
+      Subscriber subscriber1("Alice");
+      Subscriber subscriber2("Bob");
+      Subscriber subscriber3("Charlie");
+  
+      // Register subscribers to the blog
+      blog.registerObserver(&subscriber1);
+      blog.registerObserver(&subscriber2);
+      blog.registerObserver(&subscriber3);
+  
+      // Add a new post
+      blog.addPost("Observer Pattern in C++");
+  
+      // Unregister one subscriber
+      blog.unregisterObserver(&subscriber2);
+  
+      // Add another post
+      blog.addPost("Understanding Design Patterns");
+  
+      return 0;
+  }
+  ```
 </details>
 
 
