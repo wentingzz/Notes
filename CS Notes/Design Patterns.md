@@ -1096,31 +1096,139 @@ Behavioral Pattern: to define how objects collaborate and achieve the common goa
 </details>
 
 
-MVC Pattern: 
+Other Principles: 
 -
 
 <details>
-  <summary></summary>
+  <summary>MVC</summary>
 
+Model
+  ```cpp
+  class StoreOrder {
+  private:
+      std::vector<std::pair<std::string, double>> items; // Item name and price
+      std::vector<IObserver*> observers; // Observers (views)
   
-</details>
-
-<details>
-  <summary></summary>
-
+  public:
+      // Add an observer (view)
+      void addObserver(IObserver* observer) {
+          observers.push_back(observer);
+      }
   
+      // Notify all observers when the model changes
+      void notifyObservers() {
+          for (IObserver* observer : observers) {
+              observer->update();
+          }
+      }
+  
+      // Add an item to the order
+      void addItem(const std::string& name, double price) {
+          items.push_back({name, price});
+          notifyObservers();
+      }
+  
+      // Remove an item from the order
+      void removeItem(const std::string& name) {
+          items.erase(std::remove_if(items.begin(), items.end(), 
+              [&name](const std::pair<std::string, double>& item) {
+                  return item.first == name;
+              }), items.end());
+          notifyObservers();
+      }
+  
+      // Change the price of an item
+      void changePrice(const std::string& name, double newPrice) {
+          for (auto& item : items) {
+              if (item.first == name) {
+                  item.second = newPrice;
+                  break;
+              }
+          }
+          notifyObservers();
+      }
+  
+      // Get the list of items
+      const std::vector<std::pair<std::string, double>>& getItems() const {
+          return items;
+      }
+  };
+  ```
+View: keep track of Model and update if needed
+  ```cpp
+  class IObserver {
+  public:
+      virtual void update() = 0; // The update method for observers (views)
+  };
+  
+  class OrderView : public IObserver {
+  private:
+      StoreOrder& storeOrder;
+  
+  public:
+      OrderView(StoreOrder& order) : storeOrder(order) {
+          storeOrder.addObserver(this);
+      }
+  
+      // Display the items in the order
+      void display() {
+          std::cout << "Items in the order:\n";
+          const auto& items = storeOrder.getItems();
+          for (const auto& item : items) {
+              std::cout << item.first << " - $" << item.second << std::endl;
+          }
+          std::cout << "Total: $" << calculateTotal() << "\n\n";
+      }
+  
+      // Calculate the total price of the order
+      double calculateTotal() {
+          double total = 0.0;
+          for (const auto& item : storeOrder.getItems()) {
+              total += item.second;
+          }
+          return total;
+      }
+  
+      // This method is called when the model (StoreOrder) updates
+      void update() override {
+          display(); // Update the view when the model changes
+      }
+  };
+  ```
+Controller: keep track of Model and View to manipulate Model based on input from View
+  ```cpp
+  class Controller {
+  private:
+      StoreOrder& storeOrder;
+      OrderView& orderView;
+  
+  public:
+      Controller(StoreOrder& order, OrderView& view) : storeOrder(order), orderView(view) {}
+  
+      // Add an item to the order
+      void addItemToOrder(const std::string& name, double price) {
+          storeOrder.addItem(name, price);
+      }
+  
+      // Remove an item from the order
+      void removeItemFromOrder(const std::string& name) {
+          storeOrder.removeItem(name);
+      }
+  
+      // Change the price of an item
+      void changeItemPrice(const std::string& name, double newPrice) {
+          storeOrder.changePrice(name, newPrice);
+      }
+  };
+  ```
 </details>
 
 Design Principles Underlying Design Patterns
 -
 
-<details>
-  <summary>Liskow Substitution</summary>
-</details>
+Liskow Substitution: S inheirs B. Then we should be able to replace all B with S without changing the behaviors of a program.
+Open/Closed: Open to extension (good practice for backward compatibility) but closed to change. Stable parts should be closed. Unstable parts should be extensible.
 
-<details>
-  <summary>Open/Closed</summary>
-</details>
 
 <details>
   <summary>Dependency Inversion</summary>
