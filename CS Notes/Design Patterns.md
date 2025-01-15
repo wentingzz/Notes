@@ -1230,13 +1230,20 @@ Liskow Substitution: S inheirs B. Then we should be able to replace all B with S
 Open/Closed: Open to extension (good practice for backward compatibility) but closed to change. Stable parts should be closed. Unstable parts should be extensible.
 
 
-<details>
-  <summary>Dependency Inversion</summary>
-</details>
+Dependency Inversion: high-level modules should depend on high-level generalizations (not the low-level details). Client classes should call methods in abstract classes (generalizations). Decrease coupling (high coupling = hard to change) by changing direct calls to indirect calls
 
-<details>
-  <summary>Composing Object</summary>
-</details>
+Composing Object: code reuse should be achieved via aggregation instead of inheritance. (Include hpp abstract class instead cpp concrete class when reusing).
+
+- Inheritance: "is-a". highly coupled
+- Aggregation: "has-a". object in another object. Lifetime is the same
+- Composition: "has-a". object reference in another object. Lifetime can be different (Object reference can live longer). Adds behaviors at runtime
+
+```cpp
+Person::Person(string name, Birthday dateOfBirth):name(name), dateOfBirth(dateOfBirth) {
+  //this->name = name;
+  //this->dateOfBirth = dateOfBirth; //This is not allowed when initializing reference/non-basic objects!
+}
+```
 
 <details>
   <summary>Interface Segregation</summary>
