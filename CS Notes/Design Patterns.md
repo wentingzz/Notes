@@ -1245,13 +1245,74 @@ Person::Person(string name, Birthday dateOfBirth):name(name), dateOfBirth(dateOf
 }
 ```
 
-<details>
-  <summary>Interface Segregation</summary>
-</details>
+Interface Segregation: object A has union of two different object's behaviors (B & C), we should separate and implement two interfaces.
+- Bad design: B implemnets CInterface. A inherits B (highly coupled)
+- Better design: A implements BInterface, CInterface
+```cpp
+class ICashier{
+public:
+    // ICashier();
+    virtual void addItem() = 0;
+    virtual void checkout() = 0;
+};
+class IWorker{
+public:
+    // IWorker();
+    virtual void rest() = 0;
+    virtual void startShift() = 0;
+};
 
-<details>
-  <summary>Least Knowledge</summary>
-</details>
+class MachineCashier: ICashier{
+public:
+    MachineCashier(){
+        
+    }
+    void addItem() override{
+        cout << "AutoCashier adds item" << endl;
+    }
+    void checkout() override{
+        cout << "AutoCashier checks out" << endl;
+    }
+};
+
+class HumanCashier: ICashier, IWorker{
+public:
+    HumanCashier(){
+        
+    }
+    void addItem() override{
+        cout << "HumanCashier adds item" << endl;
+    }
+    void checkout() override{
+        cout << "HumanCashier checks out" << endl;
+    }
+    void rest() override{
+        cout << "HumanCashier rests" << endl;
+    }
+    
+    void startShift() override{
+        cout << "HumanCashier starts" << endl;
+    }
+};
+
+// Main Function
+int main() {
+    HumanCashier hc;
+    hc.startShift();
+    MachineCashier mc;
+    mc.addItem();
+    return 0;
+}
+```
+
+
+Least Knowledge
+- A method can call other methods within the same class.
+- A method can call methods of parameters passed to it.
+- A method can call methods of objects it instantiates locally (within the method).
+  - If class A doesn't contain class C as a parameter or field inside A, that method should NOT call C's methods. 
+- A method can call methods of instance variables (direct components) of its class.
+
 
 Anti-Patterns
 -
