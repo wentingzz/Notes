@@ -1096,13 +1096,11 @@ Behavioral Pattern: to define how objects collaborate and achieve the common goa
 </details>
 
 
-Other Principles: 
+MVC
 -
-
 <details>
-  <summary>MVC</summary>
-
-Model
+  <summary>Model</summary>
+  
   ```cpp
   class StoreOrder {
   private:
@@ -1154,7 +1152,11 @@ Model
       }
   };
   ```
-View: keep track of Model and update if needed
+</details>
+
+<details>
+  <summary>View: keep track of Model and update if needed</summary>
+
   ```cpp
   class IObserver {
   public:
@@ -1195,7 +1197,11 @@ View: keep track of Model and update if needed
       }
   };
   ```
-Controller: keep track of Model and View to manipulate Model based on input from View
+</details>
+
+<details>
+  <summary>Controller: keep track of Model and View to manipulate Model based on input from View</summary>
+
   ```cpp
   class Controller {
   private:
@@ -1314,9 +1320,21 @@ Least Knowledge
 - A method can call methods of instance variables (direct components) of its class.
 
 
-Anti-Patterns
--
-
-<details>
-  <summary>Bad Coding</summary>
-</details>
+Anti-Patterns (Code Smells)
+- Too few comments: Makes code hard to understand for others or yourself.
+- Too many comments: Can indicate bad design and may become outdated as code changes.
+- Duplicated Code needs to be refactored based on D.R.Y. Principle (Don’t Repeat Yourself)
+- Long Methods may indicate excessive complexity.
+- Large Classes (God Classes) accumulate too many responsibilities(later may attract more responsibilities) and become difficult to maintain => Break down large classes into more cohesive
+- Small Classes (Data Classes): Data-only classes with no functionality (e.g., a class with only getters/setters) are not ideal => Consider adding relevant methods to the class to make it a better abstraction.
+- Data Clumps: groups of related data (e.g., x, y, z coordinates) should be encapsulated in a single object (e.g., a 3D point class).
+- Long Parameter Lists: methods with many parameters are harder to use and more prone to errors => use parameter objects to group related parameters into a single object
+- Divergent Change requires multiple changes of a class for different reasons => Break the class into smaller, cohesive classes with distinct responsibilities
+- Shotgun Surgery: A single change requires modifications in multiple classes => Consolidate related methods into fewer classes, but avoid creating large classes (to prevent God classes).
+- Feature Envy happens (if two class always talk to each other, maybe they should be together) when a method is more interested in the details of another class than its own => Move the method to the class it is more dependent on to improve cohesion
+- Inappropriate Intimacy occurs when two classes are tightly coupled, constantly interacting with each other => Refactor to break the dependency cycle, potentially by extracting common methods into a third class.
+- Message Chains violates the Law of Demeter, where you call a method on an object that returns another object, leading to a chain of calls => Reduce long message chains to improve design flexibility and reduce brittleness.
+- Primitive Obsession: Excessive use of primitive types (like int, float, or String) instead of creating appropriate abstractions => Define custom classes to represent domain-specific data (e.g., PostalCode class instead of using a string).
+- Switch Statements => consider using polymorphism to handle different cases instead of relying on switch statements.
+- Speculative Generality: Over-engineering by adding unnecessary generalization (like unused superclasses or interfaces) in anticipation of future requirements => Follow "just-in-time design" by keeping things simple and only generalizing when needed.
+- Refused Request: A subclass inherits methods it doesn’t need, leading to unused or irrelevant behavior => If the subclass doesn't need the functionality, don’t inherit it. Instead, define the behavior directly in the subclass or elsewhere.
