@@ -1338,3 +1338,7 @@ Anti-Patterns (Code Smells)
 - Switch Statements => consider using polymorphism to handle different cases instead of relying on switch statements.
 - Speculative Generality: Over-engineering by adding unnecessary generalization (like unused superclasses or interfaces) in anticipation of future requirements => Follow "just-in-time design" by keeping things simple and only generalizing when needed.
 - Refused Request: A subclass inherits methods it doesn’t need, leading to unused or irrelevant behavior => If the subclass doesn't need the functionality, don’t inherit it. Instead, define the behavior directly in the subclass or elsewhere.
+
+Notes:
+- A "owns" B = Composition : B has no meaning or purpose in the system without A
+- A "uses" B = Aggregation : B exists independently (conceptually) from A
